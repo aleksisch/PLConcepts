@@ -1,4 +1,5 @@
 #[repr(i32)]
+#[derive(Debug)]
 pub enum Instructions {
     CALL,
     PUSH,

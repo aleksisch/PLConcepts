@@ -77,6 +77,17 @@ impl Registers {
             _ => unreachable!("incorrect register")
         }
     }
+
+    pub fn id_to_str(x: u8) -> &'static str {
+        match x {
+            0 => "ax",
+            1 => "bx",
+            2 => "cx",
+            3 => "dx",
+            4 => "sp",
+            _ => unreachable!("incorrect register")
+        }
+    }
 }
 
 impl Register<i32> for I32Reg {
