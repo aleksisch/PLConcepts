@@ -1,7 +1,6 @@
 
 pub trait Register<T> {
     fn load(&self) -> T;
-    fn load_u32(&self) -> T;
     fn store(&mut self, val: T);
     fn inc(&mut self);
 }
@@ -27,6 +26,11 @@ impl I32Reg {
     pub fn new(val: Option<i32>) -> I32Reg {
         Self { val }
     }
+
+    pub fn load_usize(&self) -> usize {
+        self.val.unwrap() as usize
+    }
+
 }
 
 impl Registers {
@@ -43,12 +47,11 @@ impl Registers {
 
     pub fn get_mut_reg(&mut self, x: u8) -> & mut I32Reg {
         match x {
-            0 => &mut self.ip,
-            1 => &mut self.sp,
-            2 => &mut self.ax,
-            3 => &mut self.bx,
-            4 => &mut self.cx,
-            5 => &mut self.dx,
+            0 => &mut self.ax,
+            1 => &mut self.bx,
+            2 => &mut self.cx,
+            3 => &mut self.dx,
+            4 => &mut self.sp,
             _ => unreachable!("incorrect argument for register")
         }
     }
@@ -59,7 +62,19 @@ impl Registers {
             1 => &self.bx,
             2 => &self.cx,
             3 => &self.dx,
+            4 => &self.sp,
             _ => unreachable!("incorrect argument for register")
+        }
+    }
+
+    pub fn from_str(x: &str) -> u8 {
+        match x {
+            "ax" => 0,
+            "bx" => 1,
+            "cx" => 2,
+            "dx" => 3,
+            "sp" => 4,
+            _ => unreachable!("incorrect register")
         }
     }
 }
@@ -67,10 +82,6 @@ impl Registers {
 impl Register<i32> for I32Reg {
     fn load(&self) -> i32 {
         return self.val.unwrap();
-    }
-
-    fn load_u32(&self) -> u32 {
-        return self.val.unwrap() as u32;
     }
 
     fn store(&mut self, val: i32) {

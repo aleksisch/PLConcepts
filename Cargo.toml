@@ -5,3 +5,18 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.3", features = ["derive"] }
+chumsky = { version = "1.0.0-alpha.6" }
+bytes = "1.5.0"
+multimap = "0.10.0"
+
+[lib]
+name = "von_neim"
+path = "src/lib.rs"
+
+[[bin]]
+name = "asm"
+path = "src/assembly.rs"
+
+[[bin]]
+name = "vm"
+path = "src/main.rs"

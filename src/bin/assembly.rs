@@ -1,10 +1,5 @@
-mod vm;
-mod registry;
-mod program;
-mod instruction;
-
 use clap::Parser;
-use crate::vm::VM;
+use von_neim::assembler::Assembly;
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -13,12 +8,12 @@ struct Args {
     /// Name of the person to greet
     #[arg(short, long)]
     input_file: String,
-    #[arg(short, long, default_value_t = 0)]
-    entrypoint: i32,
+    #[arg(short, long)]
+    output_file: String,
 }
 
 fn main() {
     let args = Args::parse();
-    let mut vm = VM::new(args.input_file, args.entrypoint, 0);
-    while vm.next_inst() {}
+    let asm = Assembly::new();
+    asm.parse(args.input_file, args.output_file)
 }
