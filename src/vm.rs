@@ -1,7 +1,7 @@
-use crate::instruction::{add_num, add_reg, call_inst, jmp, jmp_zeq, jmp_zneq, mov_num, mov_reg, printf, ret, sub_num, sub_reg};
+use crate::instruction::{add_num, add_reg, call_inst, jmp, jmp_zeq, jmp_zneq, mov_num, mov_reg, pop, printf, push, ret, sub_num, sub_reg};
+use crate::isa::Instructions;
 use crate::program::Program;
-use crate::registry::{I32Reg, Register, Registers};
-use crate::isa::{Instructions};
+use crate::registry::{Register, Registers};
 
 pub struct VM {
     program: Program,
@@ -9,10 +9,10 @@ pub struct VM {
 }
 
 impl VM {
-    pub fn new(input_file: String, stack: i32) -> Self {
+    pub fn new(input_file: String) -> Self {
         let mut prog = Program::new(input_file);
-        let ep = prog.get_entrypoint();
-        Self { program: prog, regs: Registers::new(ep as i32, stack) }
+        let (ip, sp) = prog.get_entrypoint();
+        Self { program: prog, regs: Registers::new(ip as i32, sp as i32) }
     }
 
     pub fn next_inst(&mut self) -> bool {
@@ -23,6 +23,15 @@ impl VM {
             Instructions::CALL => {
                 let offset = self.program.read_i32_shift(&mut self.regs.ip);
                 call_inst(&mut self.program, &mut self.regs.ip, &mut self.regs.sp, offset)
+            },
+            Instructions::PUSH => {
+                let reg_id = self.program.read_u8_shift(&mut self.regs.ip);
+                let reg = self.regs.get_reg(reg_id).load();
+                push(&mut self.program, &mut self.regs.sp, reg);
+            },
+            Instructions::POP => {
+                let reg_id = self.program.read_u8_shift(&mut self.regs.ip);
+                pop(&mut self.program, &mut self.regs, reg_id);
             },
             Instructions::JMP => {
                 let byte_reg = self.program.read_i32(&self.regs.ip);
@@ -37,7 +46,7 @@ impl VM {
             Instructions::JZNE => {
                 let reg_id = self.program.read_u8_shift(&mut self.regs.ip);
                 let reg = self.regs.get_reg(reg_id).load();
-                let byte_reg = self.program.read_i32(&self.regs.ip);
+                let byte_reg = self.program.read_i32_shift(&mut self.regs.ip);
                 jmp_zneq(&mut self.regs.ip, reg, byte_reg);
             }
             Instructions::RET => {
@@ -80,7 +89,10 @@ impl VM {
             Instructions::Print => {
                 printf(&mut self.program, &mut self.regs)
             }
-            Instructions::END => return false
+            Instructions::END => {
+                print!("{}", self.regs.ax.load());
+                return false
+            }
         };
         return true;
     }

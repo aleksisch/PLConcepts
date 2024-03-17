@@ -12,6 +12,6 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    let mut vm = VM::new(args.input_file, 0);
+    let mut vm = VM::new(args.input_file);
     while (vm.next_inst()) {}
 }

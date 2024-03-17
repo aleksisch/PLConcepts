@@ -15,6 +15,8 @@ enum Token<'src> {
     DefLabel(&'src str),
     Label(&'src str),
     Call,
+    Push,
+    Pop,
     Jmp,
     Jze,
     Jzne,
@@ -39,6 +41,8 @@ impl<'src> fmt::Display for Token<'src> {
             Token::DefLabel(s) => write!(f, "{}", s),
             Token::Label(s) => write!(f, "{}", s),
             Token::Call => write!(f, "CALL"),
+            Token::Push => write!(f, "PUSH"),
+            Token::Pop => write!(f, "POP"),
             Token::Jmp => write!(f, "JMP"),
             Token::Jze => write!(f, "JZE"),
             Token::Jzne => write!(f, "JZNE"),
@@ -91,6 +95,8 @@ fn lexer<'a>() -> impl Parser<'a, &'a str, Vec<(Token<'a>, Span)>> {
         "MOVN" => Token::MovNum,
         "PRINT" => Token::Print,
         "CALL" => Token::Call,
+        "PUSH" => Token::Push,
+        "POP" => Token::Pop,
         "RET" => Token::Ret,
         "JMP" => Token::Jmp,
         "JZE" => Token::Jze,
@@ -120,9 +126,6 @@ fn lexer<'a>() -> impl Parser<'a, &'a str, Vec<(Token<'a>, Span)>> {
         .collect()
 }
 
-type ParserInput<'tokens, 'src> =
-    chumsky::input::SpannedInput<Token<'src>, Span, &'tokens [(Token<'src>, Span)]>;
-
 
 fn write_int(res: &mut Vec<u8>, val: usize, start: usize) {
     res[start + 3] = (val & 0xFF) as u8;
@@ -139,8 +142,9 @@ impl Assembly {
     pub fn parse(&self, input_file: String, output_file: String) {
         let data = fs::read_to_string(&input_file).expect("Failed to read file");
         let mut res = Vec::<u8>::new();
-        res.append(&mut Vec::from(0f32.to_be_bytes()));
-        let (tokens, mut errs) = lexer().parse(data.as_str()).into_output_errors();
+        res.append(&mut Vec::from(0f32.to_be_bytes())); // ip init
+        res.append(&mut Vec::from(0f32.to_be_bytes())); // sp init
+        let (tokens, errs) = lexer().parse(data.as_str()).into_output_errors();
         let mut strings = HashMap::new();
         let mut def_labels = HashMap::new();
         let bindings = tokens.unwrap();
@@ -166,6 +170,8 @@ impl Assembly {
                 Token::Str(str) => res.append(&mut Vec::from(strings[str].to_be_bytes())),
                 Token::Ident(val) => res.push(Registers::from_str(val)),
                 Token::Call => res.push(Instructions::CALL as u8),
+                Token::Push => res.push(Instructions::PUSH as u8),
+                Token::Pop => res.push(Instructions::POP as u8),
                 Token::DefLabel(str) => def_labels.push((&str[3..str.len()-1], res.len())),
                 Token::Label(str) => {
                     labels_usage.insert(&str[0..str.len()-1], res.len());
@@ -185,11 +191,16 @@ impl Assembly {
                 Token::Print => res.push(Instructions::Print as u8),
             }
         }
+        let sz = res.len();
+        write_int(&mut res, sz, 4);
+        res.resize(sz + 500, 0); // reserve bytes for stack
+
         for (k, v) in labels_usage {
             for start in v {
                 write_int(&mut res, def_labels[k], start);
             }
         }
+
         fs::write(output_file, res).unwrap();
     }
 

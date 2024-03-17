@@ -1,5 +1,3 @@
-use std::io;
-use std::io::Write;
 use crate::program::Program;
 use crate::registry::{I32Reg, IPReg, Register, Registers, SPReg};
 
@@ -23,16 +21,24 @@ pub fn ret(ip: &mut IPReg, offset: i32) {
     ip.store(offset);
 }
 
+pub fn push(prog: &mut Program, sp: &mut SPReg, val: i32) {
+    prog.push(sp, val);
+}
+
+pub fn pop(prog: &mut Program, regs: &mut Registers, reg_id: u8) {
+    let val = prog.pop(&mut regs.sp);
+    regs.get_mut_reg(reg_id).store(val);
+}
+
 pub fn call_inst(prog: &mut Program, ip: &mut IPReg, sp: &mut SPReg, offset: i32) {
-    let offset = prog.read_i32_shift(ip);
     prog.push(sp, ip.load());
     jmp(ip, offset);
 }
 
 pub fn add_reg(regs: &mut Registers, to: u8, from: u8) {
-    let dst = regs.get_reg(to).load();
-    let src = regs.get_mut_reg(from);
-    src.store(dst + src.load());
+    let src = regs.get_reg(from).load();
+    let dst = regs.get_mut_reg(to);
+    dst.store(dst.load() + src);
 }
 
 pub fn add_num(src: &mut IPReg, dst: i32) {

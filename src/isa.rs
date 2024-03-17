@@ -1,6 +1,8 @@
 #[repr(i32)]
 pub enum Instructions {
     CALL,
+    PUSH,
+    POP,
     JMP,
     JZE,
     JZNE,

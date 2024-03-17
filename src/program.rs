@@ -18,13 +18,17 @@ impl Program {
         Self { data: Self::read_file_vec(&input_file)}
     }
 
-    pub fn get_entrypoint(&self) -> u32 {
-        let mut res = self.data[0] as u32;
+    fn read_offset_u32(&self, offset: usize) -> u32 {
+        let mut res = self.data[offset] as u32;
         for i in 1..4 {
             res <<= 8;
-            res += self.data[i] as u32;
+            res += self.data[offset + i] as u32;
         }
         res
+    }
+
+    pub fn get_entrypoint(&self) -> (u32, u32) {
+        (self.read_offset_u32(0), self.read_offset_u32(4))
     }
 
     pub fn read_offset(&self, reg: &I32Reg, offset: i32) -> u8 {
@@ -94,6 +98,7 @@ impl Program {
     }
 
     pub fn pop(&mut self, sp: &mut SPReg) -> i32 {
-        self.read_i32_shift(sp)
+        sp.store(sp.load() - 4);
+        self.read_i32(sp)
     }
 }
