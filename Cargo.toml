@@ -14,10 +14,3 @@ byteorder = "1.5.0"
 name = "von_neim"
 path = "src/lib.rs"
 
-[[bin]]
-name = "asm"
-path = "src/assembly.rs"
-
-[[bin]]
-name = "vm"
-path = "src/main.rs"

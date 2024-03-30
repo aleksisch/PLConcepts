@@ -1,6 +1,4 @@
-use byteorder::{BigEndian, ReadBytesExt}; // 1.2.7
 use std::fs;
-use crate::instruction::{add_num, add_reg, call_inst, jmp, jmp_zeq, jmp_zneq, mov_num, mov_reg, pop, printf, push, ret, sub_num, sub_reg};
 use crate::isa::Instructions;
 use crate::registry::Registers;
 
@@ -18,7 +16,7 @@ fn convert_u8(data: &[u8], start: &mut usize) -> u8 {
 
 pub fn disassembly(input_file: String) {
     let data = fs::read_to_string(&input_file).expect("Failed to read file");
-    let mut bytes = data.as_bytes();
+    let bytes = data.as_bytes();
     let mut tmp = 0;
     let mut num = convert_u32(&bytes, &mut tmp) as usize;
     loop {

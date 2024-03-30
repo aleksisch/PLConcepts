@@ -10,7 +10,7 @@ pub struct VM {
 
 impl VM {
     pub fn new(input_file: String) -> Self {
-        let mut prog = Program::new(input_file);
+        let prog = Program::new(input_file);
         let (ip, sp) = prog.get_entrypoint();
         Self { program: prog, regs: Registers::new(ip as i32, sp as i32) }
     }

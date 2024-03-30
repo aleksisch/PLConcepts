@@ -1,8 +1,6 @@
 use multimap::MultiMap;
 use chumsky::prelude::*;
-use std::{collections::HashMap, env, fmt, fs};
-use std::fmt::Write;
-use std::io::Read;
+use std::{collections::HashMap, fmt, fs};
 use chumsky::container::Container;
 use crate::isa::Instructions;
 use crate::registry::Registers;
@@ -144,11 +142,11 @@ impl Assembly {
         let mut res = Vec::<u8>::new();
         res.append(&mut Vec::from(0f32.to_be_bytes())); // ip init
         res.append(&mut Vec::from(0f32.to_be_bytes())); // sp init
-        let (tokens, errs) = lexer().parse(data.as_str()).into_output_errors();
+        let (tokens, _errs) = lexer().parse(data.as_str()).into_output_errors();
         let mut strings = HashMap::new();
         let mut def_labels = HashMap::new();
         let bindings = tokens.unwrap();
-        for (tok, dat) in &bindings {
+        for (tok, _dat) in &bindings {
             match tok {
                 Token::Str(str) => {
                     strings.push((str, res.len() as u32));
@@ -164,7 +162,7 @@ impl Assembly {
         write_int(&mut res, start, 0);
 
         let mut labels_usage = MultiMap::new();
-        for (tok, dat) in &bindings {
+        for (tok, _dat) in &bindings {
             match tok {
                 Token::Num(x) => res.append(&mut Vec::from(x.to_be_bytes())),
                 Token::Str(str) => res.append(&mut Vec::from(strings[str].to_be_bytes())),
