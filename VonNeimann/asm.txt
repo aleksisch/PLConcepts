@@ -1,0 +1,1 @@
+--input-file=in.asm --output-file=out.bin

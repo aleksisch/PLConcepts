@@ -1,0 +1,19 @@
+#[repr(i32)]
+#[derive(Debug)]
+pub enum Instructions {
+    CALL,
+    PUSH,
+    POP,
+    JMP,
+    JZE,
+    JZNE,
+    RET,
+    END,
+    AddNum,
+    AddReg,
+    SubNum,
+    SubReg,
+    MovNum,
+    MovReg,
+    Print,
+}
