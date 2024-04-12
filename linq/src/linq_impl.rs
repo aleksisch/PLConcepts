@@ -1,14 +1,16 @@
+use std::cmp::Ordering;
 use std::hash::Hash;
+use std::vec::IntoIter;
 use crate::group_by::GroupBy;
 use crate::r#where::Where;
 use crate::select::Select;
 use crate::take::Take;
 
 pub trait LinqExt: Iterator {
-    fn select<F>(self, cb: F) -> Select<Self, F>
+    fn select<F, V>(self, cb: F) -> Select<Self, F>
         where
             Self: Sized,
-            F: Fn(Self::Item) -> Self::Item     {
+            F: Fn(Self::Item) -> V {
         Select {
             it: self,
             cb
@@ -40,6 +42,20 @@ pub trait LinqExt: Iterator {
             F: Fn(&Self::Item) -> K,
             K: Ord + Hash + Clone  {
         GroupBy::new(self, cb)
+    }
+
+    fn order_by<F>(self, cb: F) -> IntoIter<Self::Item>
+        where
+            Self: Sized,
+            F: FnMut(&Self::Item, &Self::Item) -> Ordering {
+        let mut data = self.to_list();
+        data.sort_by(cb);
+        data.into_iter()
+    }
+    fn to_list(self) -> Vec::<Self::Item>
+        where
+            Self: Sized {
+        self.collect::<Vec<Self::Item>>()
     }
 }
 

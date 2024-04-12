@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
-type Cb<'a, V, K> = &'a dyn Fn(V) -> K;
-
 pub struct GroupBy<I, F, K, V> {
     pub(crate) it: I,
     pub(crate) cb: F,
@@ -22,18 +20,19 @@ impl<I: Iterator, F, K> Iterator for GroupBy<I, F, K, I::Item>
     type Item = (K, Vec<I::Item>);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut map_ref = self.elems.as_mut();
-        if map_ref.is_none() {
+        if self.elems.is_none() {
+            self.elems = Some(HashMap::new());
             loop {
                 match self.it.next() {
                     None => break,
                     Some(val) => {
                         let k = (self.cb)(&val);
-                        map_ref.as_mut().unwrap().entry(k).or_insert(Vec::new()).push(val);
+                        self.elems.as_mut().unwrap().entry(k).or_insert(Vec::new()).push(val);
                     }
                 }
             }
         }
+        let mut map_ref = self.elems.as_mut();
         if map_ref.as_mut().unwrap().is_empty() {
             None
         } else {
