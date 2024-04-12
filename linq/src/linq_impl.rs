@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 use std::hash::Hash;
 use std::vec::IntoIter;
 use crate::group_by::GroupBy;
+use crate::my_flatten::Flatten;
 use crate::r#where::Where;
 use crate::select::Select;
 use crate::take::Take;
@@ -14,6 +15,17 @@ pub trait LinqExt: Iterator {
         Select {
             it: self,
             cb
+        }
+    }
+
+    fn my_flatten(mut self) -> Flatten<Self, Self::Item>
+        where
+            Self::Item: Iterator,
+            Self: Sized {
+        let it = self.next();
+        Flatten {
+            it: self,
+            inner_it: it,
         }
     }
 
